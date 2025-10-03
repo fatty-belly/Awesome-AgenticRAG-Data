@@ -11,7 +11,7 @@ This repository is based on the paper "[Data-Centric Perspectives on Agentic Ret
 
 1. [Abstract](#abstract)
 2. [Introduction](#introduction)
-3. [Data Lifecycle](#data-lifecycle)
+3. [Data Lifecycle in Agentic RAG](#data-lifecycle-in-agentic-rag)
 4. [Domain-Specific Agentic RAG Benchmarks](#domain-specific-agentic-rag-benchmarks)
 5. [Related Surveys](#related-surveys)
 
@@ -33,9 +33,9 @@ Unlike traditional RAG, these RAG-reasoning agents perform *active knowledge see
 <p align="center">
   <img src="Figures/RAG_Comparison.png" alt="Comparison of traditional and Agentic RAG" width="600"/>
 </p>
+<p align="center"><em>Figure 1. Comparison of traditional RAG and Agentic RAG systems.</em></p>
 
-Despite growing interest, Agentic RAG development is hindered by *data scarcity*.  
-Unlike traditional RAG—where static corpora suffice—Agentic RAG requires challenging tasks that require planning, retrieval, and multiple reasoning decisions, and corresponding rich, interactive agent trajectories.
+Despite growing interest, Agentic RAG development is hindered by *data scarcity*. Unlike traditional RAG—where static corpora suffice—Agentic RAG requires challenging tasks that require planning, retrieval, and multiple reasoning decisions, and corresponding rich, interactive agent trajectories.
 
 | Stage                  | Traditional RAG                                           | Agentic RAG                                                                                                             |
 | ---------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -53,13 +53,14 @@ The data curation process in Agentic RAG has two distinctive aspects:
 - **Traditional RAG vs. Agentic RAG**: traditional RAG relies on query–document pairs, whereas Agentic RAG demands rich *agent–environment interaction traces* encoding planning and retrieval actions.  
 - **Agentic RAG vs. general agents**: general agents often use tools such as calculators or code interpreters for problem solving, whereas Agentic RAG uses search engines and knowledge bases for *knowledge seeking*. In the former cases, tools provide clear solutions, while in Agentic RAG, tools may actually bring more information for the agent to process.
 
-This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that spans data collecting, data preprocessing and task formulation, task construction, data for evaluation, and data enhancement for training. Specifically, we adopt a *generate-verify-filter/refine pipeline* to analyze the curation process of tasks and trajectories.
+This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle-in-agentic-rag) that spans data collecting, data preprocessing and task formulation, task construction, data for evaluation, and data enhancement for training. Specifically, we adopt a *generate-verify-filter/refine pipeline* to analyze the curation process of tasks and trajectories.
 
 <p align="center">
   <img src="Figures/data-lifecycle.png" alt="Data lifecycle in Agentic RAG" width="1000"/>
 </p>
+<p align="center"><em>Figure 2. Data lifecycle in Agentic RAG.</em></p>
 
-## Data Lifecycle
+## Data Lifecycle in Agentic RAG
 
 ### Overview
 
