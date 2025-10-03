@@ -5,6 +5,16 @@
 [![Contribution Welcome](https://img.shields.io/badge/Contributions-welcome-blue)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+This repository is based on the paper "[Data-Centric Perspectives on Agentic Retrieval-Augmented Generation: A Survey](https://github.com/fatty-belly/Awesome-AgenticRAG-Data/paper.pdf)".
+
+## Table of Contents
+
+1. [Abstract](#abstract)
+2. [Introduction](#introduction)
+3. [Data Lifecycle](#data-lifecycle)
+4. [Domain-Specific Agentic RAG Benchmarks](domain-specific-agentic-rag-benchmarks)
+5. [Related Surveys](related-surveys)
+
 ## Abstract
 
 Large Language Models (LLMs) excel at natural language understanding and generation, yet their reliance on static pre-training corpora may lead to outdated knowledge, hallucinations, and limited adaptability. Retrieval-Augmented Generation (RAG) mitigates these issues by grounding model outputs with external retrieval, but conventional RAG remains constrained by a fixed retrieve–then–generate routine and struggles with multi-step reasoning and tool calls. **Agentic RAG** addresses these limitations by enabling LLM agents to actively decompose tasks, issue exploratory queries, and refine evidence through iterative retrieval. Despite growing interest, the development of Agentic RAG is impeded by data scarcity: unlike traditional RAG, it requires challenging tasks that require planning, retrieval, and multiple reasoning decisions, and corresponding rich, interactive agent trajectories. This survey presents the first data-centric overview of Agentic RAG, framing its data lifecycle—data collecting, data preprocessing and task formulation, task construction, data for evaluation, and data enhancement for training—and cataloging representative systems and datasets in different domains (\eg question answering, web, software engineering). From data perspectives, we aim to guide the creation of scalable, high-quality datasets for the next generation of adaptive, knowledge-seeking LLM agents.
@@ -29,42 +39,73 @@ Unlike traditional RAG, these RAG-reasoning agents perform *active knowledge see
 Despite growing interest, Agentic RAG development is hindered by *data scarcity*.  
 Unlike traditional RAG—where static corpora suffice—Agentic RAG requires challenging tasks that require planning, retrieval, and multiple reasoning decisions, and corresponding rich, interactive agent trajectories.
 
-| Stage             | Traditional RAG                                                                 | Agentic RAG                                                                                   |
-|-------------------|----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| **Data Collection** | Static data (e.g., Wikipedia, ArXiv)                                           | Interactive data (e.g., tool/API usage, web navigation)                                        |
-| **Task Construction** | Basic tasks (single-step, solvable with direct retrieval)                     | Hard tasks (requiring decomposition, different tools, and reasoning)                           |
-| **Evaluation Metrics** | Correctness                                                                   | Multiple axes (e.g., correctness, efficiency, safety)                                          |
-| **Data for Training**   | Chain-of-Thought                                                              | Thought–action trajectories, preference pairs, process rewards, new data generated during training for self-improvement |
+| Stage                  | Traditional RAG                                           | Agentic RAG                                                                                                             |
+| ---------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Data Collection**    | Static data (e.g., Wikipedia, ArXiv)                      | Interactive data (e.g., tool/API usage, web navigation)                                                                 |
+| **Task Construction**  | Basic tasks (single-step, solvable with direct retrieval) | Hard tasks (requiring decomposition, different tools, and reasoning)                                                    |
+| **Evaluation Metrics** | Correctness                                               | Multiple axes (e.g., correctness, efficiency, safety)                                                                   |
+| **Data for Training**  | Chain-of-Thought                                          | Thought–action trajectories, preference pairs, process rewards, new data generated during training for self-improvement |
 
-<p align="center"><em>Table&nbsp;1.&nbsp;Comparison of traditional RAG and Agentic RAG in data lifecycle.</em></p>
+<p align="center"><em>Table 1. Comparison of traditional RAG and Agentic RAG in data lifecycle.</em></p>
 
 Such data are costly to annotate, difficult to scale, and prone to quality issues when automatically synthesized. Therefore, curating scalable and high-quality datasets and benchmarks has been a central problem in the development of Agentic RAG systems.
 
 The data curation process in Agentic RAG has two distinctive aspects:  
+
 - **Traditional RAG vs. Agentic RAG**: traditional RAG relies on query–document pairs, whereas Agentic RAG demands rich *agent–environment interaction traces* encoding planning and retrieval actions.  
 - **Agentic RAG vs. general agents**: general agents often use tools such as calculators or code interpreters for problem solving, whereas Agentic RAG uses search engines and knowledge bases for *knowledge seeking*. In the former cases, tools provide clear solutions, while in Agentic RAG, tools may actually bring more information for the agent to process.
 
 This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that spans data collecting, data preprocessing and task formulation, task construction, data for evaluation, and data enhancement for training. Specifically, we adopt a *generate-verify-filter/refine pipeline* to analyze the curation process of tasks and trajectories.
 
 <p align="center">
-  <img src="Figures/data-lifecycle.png" alt="Data lifecycle in Agentic RAG" width="600"/>
+  <img src="Figures/data-lifecycle.png" alt="Data lifecycle in Agentic RAG" width="1000"/>
 </p>
 
 ## Data Lifecycle
 
+### Overview
+
+1. [Data Collecting](#data-collecting)
+   - [Static Data](#static-data)
+   - [Interactive Data](#interactive-data)
+2. [Data Preprocessing and Task Formulation](#data-preprocessing-and-task-formulation)
+   - [Preprocessing](#preprocessing)
+   - [Task Formulation](#task-formulation)
+3. [Task Construction: Annotation and Synthesis](#task-construction-annotation-and-synthesis)
+   - [Generate](#generate)
+     - [Curating Methods](#curating-methods)
+     - [Difficulty Enhancement](#difficulty-enhancement)
+   - [Verify](#verify)
+     - [Methods](#methods)
+     - [Overlooked Validity Criteria](#overlooked-validity-criteria)
+   - [Filter/Refine](#filterrefine)
+     - [Quality](#quality)
+     - [Difficulty](#difficulty)
+4. [Data for Evaluation](#data-for-evaluation)
+   - [Decontamination](#decontamination)
+   - [Evaluation Metrics and Approaches](#evaluation-metrics-and-approaches)
+     - [Correctness](#correctness)
+     - [Beyond Correctness](#beyond-correctness)
+5. [Data Enhancement for Training](#data-enhancement-for-training)
+   - [SFT](#sft)
+     - [Basic Tool-usage Skills](#basic-tool-usage-skills)
+     - [Thought–action Trajectories](#thought–action-trajectories)
+
 ### Data Collecting
 
 #### Static Data
+
 - Wikipedia
-  - (ACL 2019) **Natural Questions: A Benchmark for Question Answering Research** [[Paper]](https://aclanthology.org/Q19-1026.pdf) [[Code]](https://github.com/google-research-datasets/natural-questions) ![GitHub Repo stars](https://img.shields.io/github/stars/google-research-datasets/natural-questions?style=social)
-  - (ACL 2018) **HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering** [[Paper]](https://aclanthology.org/D18-1259/) [[Code]](https://github.com/hotpotqa/hotpot) ![GitHub Repo stars](https://img.shields.io/github/stars/hotpotqa/hotpot?style=social)  
-  - (ACL 2020) **Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps (2WikiMultihopQA)** [[Paper]](https://www.aclweb.org/anthology/2020.coling-main.51/) [[Code]](https://github.com/Alab-NII/2wikimultihop) ![GitHub Repo stars](https://img.shields.io/github/stars/Alab-NII/2wikimultihop?style=social)   
+  - (TACL 2019) **Natural Questions: A Benchmark for Question Answering Research** [[Paper]](https://aclanthology.org/Q19-1026.pdf) [[Code]](https://github.com/google-research-datasets/natural-questions) ![GitHub Repo stars](https://img.shields.io/github/stars/google-research-datasets/natural-questions?style=social)
+  - (EMNLP 2018) **HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering** [[Paper]](https://aclanthology.org/D18-1259/) [[Code]](https://github.com/hotpotqa/hotpot) ![GitHub Repo stars](https://img.shields.io/github/stars/hotpotqa/hotpot?style=social)  
+  - (COLING 2020) **Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps (2WikiMultihopQA)** [[Paper]](https://www.aclweb.org/anthology/2020.coling-main.51/) [[Code]](https://github.com/Alab-NII/2wikimultihop) ![GitHub Repo stars](https://img.shields.io/github/stars/Alab-NII/2wikimultihop?style=social)   
 - Github repositories
   - (ICLR 2024) **SWE-bench: Can Language Models Resolve Real-world Github Issues?** [[Paper]](https://arxiv.org/pdf/2310.06770) [[Code]](https://github.com/SWE-bench/SWE-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/SWE-bench/SWE-bench?style=social)    
 - Kaggle competitions
   - (ICLR 2025) **MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering** [[Paper]](https://arxiv.org/pdf/2410.07095) [[Code]](https://github.com/openai/mle-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/mle-bench?style=social)
- 
+
 #### Interactive data
+
 - API-based retrieval
   - (WWW 2025) **FlashRAG: A Modular Toolkit for Efficient Retrieval-Augmented Generation Research** [[Paper]](https://arxiv.org/pdf/2405.13576) [[Code]](https://github.com/RUC-NLPIR/FlashRAG) ![GitHub Repo stars](https://img.shields.io/github/stars/RUC-NLPIR/FlashRAG?style=social)
 - Web navigation
@@ -74,73 +115,211 @@ This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that 
 ### Data Preprocessing and Task Formulation
 
 #### Preprocessing
-- Relation schemas
-- Chronological structure
-#### Task Formulation
+
+- (EMNLP2025) **LightRAG: Simple and Fast Retrieval-Augmented Generation** [[Paper]](https://arxiv.org/abs/2410.05779) [[Code]](https://github.com/HKUDS/LightRAG) ![GitHub Repo stars](https://img.shields.io/github/stars/HKUDS/LightRAG?style=social) (relation schemas)
+
+- **T-GRAG: A Dynamic GraphRAG Framework for Resolving Temporal Conflicts and Redundancy in Knowledge Retrieval** [[Paper]](https://arxiv.org/abs/2508.01680) [[Code]](https://github.com/Arvin0313/T-GRAG) ![GitHub Repo stars](https://img.shields.io/github/stars/Arvin0313/T-GRAG?style=social) (chronological structure)
+  
+  #### Task Formulation
+
 - Close-ended
+  
   - (ACL 2017) **TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension** [[Paper]](https://aclanthology.org/P17-1147.pdf) [[Code]](https://github.com/mandarjoshi90/triviaqa) ![GitHub Repo stars](https://img.shields.io/github/stars/mandarjoshi90/triviaqa?style=social) 
-  - (ACL 2019) **Natural Questions: A Benchmark for Question Answering Research** [[Paper]](https://aclanthology.org/Q19-1026.pdf) [[Code]](https://github.com/google-research-datasets/natural-questions) ![GitHub Repo stars](https://img.shields.io/github/stars/google-research-datasets/natural-questions?style=social) 
+  - (TACL 2019) **Natural Questions: A Benchmark for Question Answering Research** [[Paper]](https://aclanthology.org/Q19-1026.pdf) [[Code]](https://github.com/google-research-datasets/natural-questions) ![GitHub Repo stars](https://img.shields.io/github/stars/google-research-datasets/natural-questions?style=social) 
+
 - Real-world workflows
+  
   - (ICLR 2024) **SWE-bench: Can Language Models Resolve Real-world Github Issues?** [[Paper]](https://arxiv.org/pdf/2310.06770) [[Code]](https://github.com/SWE-bench/SWE-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/SWE-bench/SWE-bench?style=social)
   - (ICLR 2025) **MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering** [[Paper]](https://arxiv.org/pdf/2410.07095) [[Code]](https://github.com/openai/mle-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/mle-bench?style=social)
-- Creative
-### Task Construction: Annotation and Synthesis
-#### Generate
-##### Curating Methods
+
+- Creative (Academic Writing)
+  
+  - (Neurips 2024) **AutoSurvey: Large Language Models Can Automatically Write Surveys** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2024/file/d07a9fc7da2e2ec0574c38d5f504d105-Paper-Conference.pdf) [[Code]](https://github.com/AutoSurveys/AutoSurvey) ![GitHub Repo stars](https://img.shields.io/github/stars/AutoSurveys/AutoSurvey?style=social)
+  - (ACL 2025) **SurveyForge: On the Outline Heuristics, Memory-Driven Generation, and Multi-dimensional Evaluation for Automated Survey Writing** [[Paper]](https://aclanthology.org/2025.acl-long.609.pdf) [[Code]](https://github.com/Alpha-Innovator/SurveyForge) ![GitHub Repo stars](https://img.shields.io/github/stars/Alpha-Innovator/SurveyForge?style=social)
+  - **SurveyX: Academic Survey Automation via Large Language Models** [[Paper]](https://arxiv.org/pdf/2502.14776) [[Code]](https://github.com/IAAR-Shanghai/SurveyX) ![GitHub Repo stars](https://img.shields.io/github/stars/IAAR-Shanghai/SurveyX?style=social)
+  - **Agent Laboratory: Using LLM Agents as Research Assistants** [[Paper]](https://arxiv.org/pdf/2501.04227) [[Code]](https://github.com/SamuelSchmidgall/AgentLaboratory) ![GitHub Repo stars](https://img.shields.io/github/stars/SamuelSchmidgall/AgentLaboratory?style=social)
+  
+  ### Task Construction: Annotation and Synthesis
+  
+  #### Generate
+  
+  ##### Curating Methods
+
 - Crowdsourced
+  
+  - (TACL 2019) **Natural Questions: A Benchmark for Question Answering Research** [[Paper]](https://aclanthology.org/Q19-1026.pdf) [[Code]](https://github.com/google-research-datasets/natural-questions) ![GitHub Repo stars](https://img.shields.io/github/stars/google-research-datasets/natural-questions?style=social)
+  - (EMNLP 2018) **HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering** [[Paper]](https://aclanthology.org/D18-1259/) [[Code]](https://github.com/hotpotqa/hotpot) ![GitHub Repo stars](https://img.shields.io/github/stars/hotpotqa/hotpot?style=social)
+  - **Measuring short-form factuality in large language models (SimpleQA)** [[Paper]](https://arxiv.org/pdf/2411.04368) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social)
+  - **BrowseComp: A Simple Yet Challenging Benchmark for Browsing Agents** [[Paper]](https://arxiv.org/pdf/2504.12516) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social)
+  - (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark)
+
 - Ready tasks on Internet
+  
   - (ACL 2017) **TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension** [[Paper]](https://aclanthology.org/P17-1147.pdf) [[Code]](https://github.com/mandarjoshi90/triviaqa) ![GitHub Repo stars](https://img.shields.io/github/stars/mandarjoshi90/triviaqa?style=social)
   - (ICLR 2024) **SWE-bench: Can Language Models Resolve Real-world Github Issues?** [[Paper]](https://arxiv.org/pdf/2310.06770) [[Code]](https://github.com/SWE-bench/SWE-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/SWE-bench/SWE-bench?style=social)
   - (ICLR 2025) **MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering** [[Paper]](https://arxiv.org/pdf/2410.07095) [[Code]](https://github.com/openai/mle-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/mle-bench?style=social)
--  Synthetic
-##### Difficulty Enhancement
+
+- Synthetic
+  
+  - (COLING 2020) **Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps (2WikiMultihopQA)** [[Paper]](https://www.aclweb.org/anthology/2020.coling-main.51/) [[Code]](https://github.com/Alab-NII/2wikimultihop) ![GitHub Repo stars](https://img.shields.io/github/stars/Alab-NII/2wikimultihop?style=social)
+  - (ACL 2024) **INTERS: Unlocking the Power of Large Language Models in Search with Instruction Tuning** [[Paper]](https://aclanthology.org/2024.acl-long.154/) [[Code]](https://github.com/DaoD/INTERS) ![GitHub Repo stars](https://img.shields.io/github/stars/DaoD/INTERS?style=social)
+  - (Neurips 2024) **Gorilla: Large Language Model Connected with Massive APIs** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2024/file/e4c61f578ff07830f5c37378dd3ecb0d-Paper-Conference.pdf) [[Code]](https://github.com/ShishirPatil/gorilla) ![GitHub Repo stars](https://img.shields.io/github/stars/ShishirPatil/gorilla?style=social)
+  - **WebDancer: Towards Autonomous Information Seeking Agency** [[Paper]](https://arxiv.org/pdf/2505.22648) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social)  
+  
+  ##### Difficulty Enhancement
+
 - Complexity
+  
+  - (EMNLP 2018) **HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering** [[Paper]](https://aclanthology.org/D18-1259/) [[Code]](https://github.com/hotpotqa/hotpot) ![GitHub Repo stars](https://img.shields.io/github/stars/hotpotqa/hotpot?style=social) (multi hops)
+  - (COLING 2020) **Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps (2WikiMultihopQA)** [[Paper]](https://www.aclweb.org/anthology/2020.coling-main.51/) [[Code]](https://github.com/Alab-NII/2wikimultihop) ![GitHub Repo stars](https://img.shields.io/github/stars/Alab-NII/2wikimultihop?style=social) (multi hops)
+  - (TACL 2022) **MuSiQue: Multihop Questions via Single-hop Question Composition** [[Paper]](https://aclanthology.org/2022.tacl-1.31.pdf) [[Code]](https://github.com/stonybrooknlp/musique) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/musique?style=social) (multi hops)
+  - **TaskCraft: Automated Generation of Agentic Tasks** [[Paper]](https://arxiv.org/abs/2506.10055) [[Code]](https://github.com/OPPO-PersonalAI/TaskCraft) ![GitHub Repo stars](https://img.shields.io/github/stars/OPPO-PersonalAI/TaskCraft?style=social) (multi hops)
+  - **WebDancer: Towards Autonomous Information Seeking Agency** [[Paper]](https://arxiv.org/pdf/2505.22648) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (multi hops)
+  - (ACL 2024) **On the Multi-turn Instruction Following for Conversational Web Agents** [[Paper]](https://aclanthology.org/2024.acl-long.477.pdf) [[Code]](https://github.com/magicgh/self-map) ![GitHub Repo stars](https://img.shields.io/github/stars/magicgh/self-map?style=social) (multi-turn conversations)
+  - (ACL 2025) **WebWalker: Benchmarking LLMs in Web Traversal** [[Paper]](https://aclanthology.org/2025.acl-long.508.pdf) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (multiple webpages)
+  - (ICLR 2024) **SWE-bench: Can Language Models Resolve Real-world Github Issues?** [[Paper]](https://arxiv.org/pdf/2310.06770) [[Code]](https://github.com/SWE-bench/SWE-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/SWE-bench/SWE-bench?style=social) (repo-level coding)
+  - (ICLR 2024) **RepoBench: Benchmarking Repository-Level Code Auto-Completion Systems** [[Paper]](https://arxiv.org/abs/2306.03091) [[Code]](https://github.com/Leolty/repobench) ![GitHub Repo stars](https://img.shields.io/github/stars/Leolty/repobench?style=social) (repo-level coding)
+  - (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark) (multiple tools)
+
 - Uncertainty
+  
+  - (TACL 2021) **Did Aristotle Use a Laptop? A Question Answering Benchmark with Implicit Reasoning Strategies (StrategyQA)** [[Paper]](https://aclanthology.org/2021.tacl-1.21.pdf) [[Code]](https://github.com/eladsegal/strategyqa) ![GitHub Repo stars](https://img.shields.io/github/stars/eladsegal/strategyqa?style=social) (implicit reasoning tasks)
+  - (COLING 2020) **Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps (2WikiMultihopQA)** [[Paper]](https://www.aclweb.org/anthology/2020.coling-main.51/) [[Code]](https://github.com/Alab-NII/2wikimultihop) ![GitHub Repo stars](https://img.shields.io/github/stars/Alab-NII/2wikimultihop?style=social) (distractors in reference documents)
+  - (TACL 2022) **MuSiQue: Multihop Questions via Single-hop Question Composition** [[Paper]](https://aclanthology.org/2022.tacl-1.31.pdf) [[Code]](https://github.com/stonybrooknlp/musique) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/musique?style=social) (distractors in reference documents, unanswerable questions)
+  - **WebSailor: Navigating Super-human Reasoning for Web Agent** [[Paper]](https://arxiv.org/pdf/2507.02592) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (obfuscate key information)
+  - **BrowseComp: A Simple Yet Challenging Benchmark for Browsing Agents** [[Paper]](https://arxiv.org/pdf/2504.12516) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social) (inverted problems)
+
 - Expertise
-#### Verify
-##### Methods
-- Human-based
+  
+  - (COLM 2024) **GPQA: A Graduate-Level Google-Proof Q&A Benchmark** [[Paper]](https://arxiv.org/abs/2311.12022) [[Code]](https://github.com/idavidrein/gpqa) ![GitHub Repo stars](https://img.shields.io/github/stars/idavidrein/gpqa?style=social)
+  - **Humanity's Last Exam** [[Paper]](https://arxiv.org/abs/2501.14249) [[Code]](https://github.com/centerforaisafety/hle) ![GitHub Repo stars](https://img.shields.io/github/stars/centerforaisafety/hle?style=social)
+  
+  #### Verify
+  
+  ##### Methods
+
+- Human-based (inter-annotator agreement)
+  
+  - **Measuring short-form factuality in large language models (SimpleQA)** [[Paper]](https://arxiv.org/pdf/2411.04368) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social)
+  - **BrowseComp: A Simple Yet Challenging Benchmark for Browsing Agents** [[Paper]](https://arxiv.org/pdf/2504.12516) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social)
+  - (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark)
+
 - LLM-based
-##### Overlooked Validity Criteria
+  
+  - (ACL 2024 findings) **Chain-of-Verification Reduces Hallucination in Large Language Models** [[Paper]](https://aclanthology.org/2024.findings-acl.212.pdf) [[Code]](https://github.com/ritun16/chain-of-verification) ![GitHub Repo stars](https://img.shields.io/github/stars/ritun16/chain-of-verification?style=social)
+  
+  ##### Overlooked Validity Criteria
+
 - QA
+  
+  - **Measuring short-form factuality in large language models (SimpleQA)** [[Paper]](https://arxiv.org/pdf/2411.04368) [[Code]](https://github.com/openai/simple-evals) ![GitHub Repo stars](https://img.shields.io/github/stars/openai/simple-evals?style=social) (unique, time-invariant answer)
+  - (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark) (unique, time-invariant answer)
+
 - Code
-#### Filter/Refine
-##### Quality
-- Linguistic naturalness
-- Robustness (no data leakage or exploitable shortcuts)
-- Source credibility
-##### Difficulty
+  
+  - (ICLR 2024) **SWE-bench: Can Language Models Resolve Real-world Github Issues?** [[Paper]](https://arxiv.org/pdf/2310.06770) [[Code]](https://github.com/SWE-bench/SWE-bench) ![GitHub Repo stars](https://img.shields.io/github/stars/SWE-bench/SWE-bench?style=social) (environment reproducible, reference code passable)
+  
+  #### Filter/Refine
+  
+  ##### Quality
+
+- (ACL 2025) **WebWalker: Benchmarking LLMs in Web Traversal** [[Paper]](https://aclanthology.org/2025.acl-long.508.pdf) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (linguistic naturalness)
+
+- **A Functionality-Grounded Benchmark for Evaluating Web Agents in E-commerce Domains (Amazon-bench)** [[Paper]](https://www.arxiv.org/pdf/2508.15832) (linguistic naturalness)
+
+- (EMNLP 2020) **Is Multihop QA in DIRE Condition? Measuring and Reducing Disconnected Reasoning** [[Paper]](https://aclanthology.org/2020.emnlp-main.712.pdf) [[Code]](https://github.com/stonybrooknlp/dire) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/dire?style=social) (no data leakage or exploitable shortcuts)
+
+- (TACL 2022) **MuSiQue: Multihop Questions via Single-hop Question Composition** [[Paper]](https://aclanthology.org/2022.tacl-1.31.pdf) [[Code]](https://github.com/stonybrooknlp/musique) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/musique?style=social) (no data leakage or exploitable shortcuts)
+
+- **Agent Laboratory: Using LLM Agents as Research Assistants** [[Paper]](https://arxiv.org/pdf/2501.04227) [[Code]](https://github.com/SamuelSchmidgall/AgentLaboratory) ![GitHub Repo stars](https://img.shields.io/github/stars/SamuelSchmidgall/AgentLaboratory?style=social) (source credibility)
+  
+  ##### Difficulty
+
 - rule-based
+  
+  - **TaskCraft: Automated Generation of Agentic Tasks** [[Paper]](https://arxiv.org/abs/2506.10055) [[Code]](https://github.com/OPPO-PersonalAI/TaskCraft) ![GitHub Repo stars](https://img.shields.io/github/stars/OPPO-PersonalAI/TaskCraft?style=social) (number of hops)
+  - (ACL 2025) **WebWalker: Benchmarking LLMs in Web Traversal** [[Paper]](https://aclanthology.org/2025.acl-long.508.pdf) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (number of hops)
+  - (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark) (number of tools)
+  - (TACL 2022) **MuSiQue: Multihop Questions via Single-hop Question Composition** [[Paper]](https://aclanthology.org/2022.tacl-1.31.pdf) [[Code]](https://github.com/stonybrooknlp/musique) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/musique?style=social) (with or without unanswerable questions)
+  - (COLM 2024) **GPQA: A Graduate-Level Google-Proof Q&A Benchmark** [[Paper]](https://arxiv.org/abs/2311.12022) [[Code]](https://github.com/idavidrein/gpqa) ![GitHub Repo stars](https://img.shields.io/github/stars/idavidrein/gpqa?style=social) (accuracy of experts and non-experts)
+
 - LLM-based (LLM's success rate as proxy)
-### Data for Evaluation
-#### Decontamination
-- train-test
-- internet-test
-#### Evaluation Metrics and Approaches
-##### Correctness
+  
+  - (Neurips 2024) **Easy2Hard-Bench: Standardized Difficulty Labels for Profiling LLM Performance and Generalization** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2024/file/4e6f22305275966513990f53cec908e0-Paper-Datasets_and_Benchmarks_Track.pdf) [[Code]](https://github.com/umd-huang-lab/Easy2Hard-Bench) ![GitHub Repo stars](https://img.shields.io/github/stars/umd-huang-lab/Easy2Hard-Bench?style=social)
+  - **TaskEval: Assessing Difficulty of Code Generation Tasks for Large Language Models** [[Paper]](https://arxiv.org/pdf/2407.21227v2)
+  
+  ### Data for Evaluation
+  
+  #### Decontamination
+
+- (TACL 2022) **MuSiQue: Multihop Questions via Single-hop Question Composition** [[Paper]](https://aclanthology.org/2022.tacl-1.31.pdf) [[Code]](https://github.com/stonybrooknlp/musique) ![GitHub Repo stars](https://img.shields.io/github/stars/stonybrooknlp/musique?style=social) (filter out multi-hop questions in test split with any identical single-hop component in train split)
+
+- (ICLR 2024) **GAIA: a benchmark for General AI Assistants** [[Paper]](https://arxiv.org/abs/2311.12983) [[Dataset]](https://huggingface.co/gaia-benchmark) (question does not exist on the internet in plain text)
+  
+  #### Evaluation Metrics and Approaches
+  
+  ##### Correctness
+  
+  For this part, please refer to [task formulation](#task-formulation) for the papers.
+
 - Gold-standard answers
+
 - Programmatic validators
+
 - LLM-as-a-judge
-##### Beyond Correctness
-- Efficiency
-- Safety
-### Data Enhancement for Training
-#### SFT
-##### Basic Tool-usage Skills
-##### Thought–action Trajectories
+  
+  ##### Beyond Correctness
+
+- (ACL 2025) **WebWalker: Benchmarking LLMs in Web Traversal** [[Paper]](https://aclanthology.org/2025.acl-long.508.pdf) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (**efficiency:** the action count of successful agentic executions)
+
+- **A Functionality-Grounded Benchmark for Evaluating Web Agents in E-commerce Domains (Amazon-bench)** [[Paper]](https://www.arxiv.org/pdf/2508.15832) (**safety:** benign failures vs. harmful failures)
+  
+  ### Data Enhancement for Training
+  
+  #### SFT
+  
+  ##### Basic Tool-usage Skills
+  
+  - (Neurips 2023) **Toolformer: Language Models Can Teach Themselves to Use Tools** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2023/file/d842425e4bf79ba039352da0f658a906-Paper-Conference.pdf) [[Code]](https://github.com/conceptofmind/toolformer) ![GitHub Repo stars](https://img.shields.io/github/stars/conceptofmind/toolformer?style=social) (modify pretraining corpora)
+  - (ACL 2024) **INTERS: Unlocking the Power of Large Language Models in Search with Instruction Tuning** [[Paper]](https://aclanthology.org/2024.acl-long.154/) [[Code]](https://github.com/DaoD/INTERS) ![GitHub Repo stars](https://img.shields.io/github/stars/DaoD/INTERS?style=social) (integrate multiple resources into meta-datasets)
+  - (Neurips 2024) **Gorilla: Large Language Model Connected with Massive APIs** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2024/file/e4c61f578ff07830f5c37378dd3ecb0d-Paper-Conference.pdf) [[Code]](https://github.com/ShishirPatil/gorilla) ![GitHub Repo stars](https://img.shields.io/github/stars/ShishirPatil/gorilla?style=social) (self-instruction and in-context learning)
+  
+  ##### Thought–action Trajectories
+
 - Generate
+  
+  - (Neurips 2022) **STaR: Bootstrapping Reasoning With Reasoning** [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2022/file/639a9a172c044fbb64175b5fad42e9a5-Paper-Conference.pdf) [[Code]](https://github.com/ezelikman/STaR) ![GitHub Repo stars](https://img.shields.io/github/stars/ezelikman/STaR?style=social) (in-context bootstrapping)
+  - **Distilling LLM Agent into Small Models with Retrieval and Code Tools** [[Paper]](https://arxiv.org/pdf/2505.17612) [[Code]](https://github.com/Nardien/agent-distillation) ![GitHub Repo stars](https://img.shields.io/github/stars/Nardien/agent-distillation?style=social) (trajectory distillation)
+  - **WebSailor: Navigating Super-human Reasoning for Web Agent** [[Paper]](https://arxiv.org/pdf/2507.02592) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (trajectory distillation)
+  - **WebShaper: Agentically Data Synthesizing via Information-Seeking Formalization** [[Paper]](https://arxiv.org/pdf/2507.15061) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (trajectory distillation)
+
 - Filter/Refine
-  - Quality
-    - 111 
-  - Conciseness
-    - 222    
+
+	- (ACL 2025 Findings) **Unveiling the Key Factors for Distilling Chain-of-Thought Reasoning** [[Paper]](https://aclanthology.org/2025.findings-acl.782/) [[Code]](https://github.com/EIT-NLP/Distilling-CoT-Reasoning) ![GitHub Repo stars](https://img.shields.io/github/stars/EIT-NLP/Distilling-CoT-Reasoning?style=social) (**quality** influenced by factors such as trajectory granularity, formatting choices, and the teacher model used)
+	- **WebShaper: Agentically Data Synthesizing via Information-Seeking Formalization** [[Paper]](https://arxiv.org/pdf/2507.15061) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (**conciseness:** filters out trajectories with severe repetition)
+	- **WebSailor: Navigating Super-human Reasoning for Web Agent** [[Paper]](https://arxiv.org/pdf/2507.02592) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) (**conciseness:** reconstructs concise rationales from action–observation sequences)
+	- **Deconstructing Long Chain-of-Thought: A Structured Reasoning Optimization Framework for Long CoT Distillation** [[Paper]](https://arxiv.org/pdf/2503.16385)(**conciseness:** removes redundant or incorrect reasoning paths)
+
 #### RL
+
 ##### Outcome-based Rewards
+
+- (COLM 2025) **Search-R1: Training LLMs to Reason and Leverage Search Engines with Reinforcement Learning** [[Paper]](https://arxiv.org/pdf/2503.09516) [[Code]](https://github.com/PeterGriffinJin/Search-R1) ![GitHub Repo stars](https://img.shields.io/github/stars/PeterGriffinJin/Search-R1?style=social)
+- **R1-Searcher: Incentivizing the Search Capability in LLMs via Reinforcement Learning** [[Paper]](https://arxiv.org/pdf/2503.05592) [[Code]](https://github.com/RUCAIBox/R1-Searcher) ![GitHub Repo stars](https://img.shields.io/github/stars/RUCAIBox/R1-Searcher?style=social)
+- **DeepResearcher: Scaling Deep Research via Reinforcement Learning in Real-world Environments** [[Paper]](https://arxiv.org/abs/2504.03160) [[Code]](https://github.com/GAIR-NLP/DeepResearcher) ![GitHub Repo stars](https://img.shields.io/github/stars/GAIR-NLP/DeepResearcher?style=social)
+- **ReSearch: Learning to Reason with Search for LLMs via Reinforcement Learning** [[Paper]](https://arxiv.org/abs/2503.19470) [[Code]](https://github.com/Agent-RL/ReCall) ![GitHub Repo stars](https://img.shields.io/github/stars/Agent-RL/ReCall?style=social)
+- **WebDancer: Towards Autonomous Information Seeking Agency** [[Paper]](https://arxiv.org/pdf/2505.22648) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social)
+- **WebSailor: Navigating Super-human Reasoning for Web Agent** [[Paper]](https://arxiv.org/pdf/2507.02592) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social) 
+- **WebShaper: Agentically Data Synthesizing via Information-Seeking Formalization** [[Paper]](https://arxiv.org/pdf/2507.15061) [[Code]](https://github.com/Alibaba-NLP/DeepResearch) ![GitHub Repo stars](https://img.shields.io/github/stars/Alibaba-NLP/DeepResearch?style=social)
+
 ##### Data-aware Rewards
-- Retrieval rewards
-- Preference pairs
+
+- (COLM 2025) **DeepRetrieval: Hacking Real Search Engines and Retrievers with Large Language Models via Reinforcement Learning** [[Paper]](https://arxiv.org/abs/2503.00223) [[Code]](https://github.com/pat-jj/DeepRetrieval) ![GitHub Repo stars](https://img.shields.io/github/stars/pat-jj/DeepRetrieval?style=social) (retrieval rewards)
+- **ReZero: Enhancing LLM search ability by trying one-more-time** [[Paper]](https://arxiv.org/pdf/2504.11001) [[Code]](https://github.com/menloresearch/ReZero) ![GitHub Repo stars](https://img.shields.io/github/stars/menloresearch/ReZero?style=social) (retrieval rewards)
+- (Neurips 2025) **WebThinker: Empowering Large Reasoning Models with Deep Research Capability** [[Paper]](https://arxiv.org/pdf/2504.21776) [[Code]](https://github.com/sunnynexus/WebThinker) ![GitHub Repo stars](https://img.shields.io/github/stars/sunnynexus/WebThinker?style=social) (preference pairs based on quality, efficiency, and conciseness)
 
 ## Domain-Specific Agentic RAG Benchmarks
+
 <table>
   <thead>
     <tr>
@@ -185,4 +364,10 @@ This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that 
 </table>
 
 ---
+
 *Metrics for QA are generally string matching (exact/fuzzy) or F1, and are omitted in the table.*
+
+## Related Surveys
+
+- **Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG** [[Paper]](https://arxiv.org/pdf/2501.09136) [[GitHub]](https://github.com/asinghcsu/AgenticRAG-Survey) ![GitHub Repo stars](https://img.shields.io/github/stars/asinghcsu/AgenticRAG-Survey?style=social) (a general survey on Agentic RAG pipelines and frameworks)
+- (EMNLP 2025) **Towards Agentic RAG with Deep Reasoning: A Survey of RAG-Reasoning Systems in LLMs** [[Paper]](https://arxiv.org/pdf/2507.09477) [[GitHub]](https://github.com/DavidZWZ/Awesome-RAG-Reasoning) ![GitHub Repo stars](https://img.shields.io/github/stars/DavidZWZ/Awesome-RAG-Reasoning?style=social) (the reasoning methods and frameworks in Agentic RAG)
