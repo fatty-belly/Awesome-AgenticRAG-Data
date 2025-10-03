@@ -5,7 +5,7 @@
 [![Contribution Welcome](https://img.shields.io/badge/Contributions-welcome-blue)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository is based on the paper "[Data-Centric Perspectives on Agentic Retrieval-Augmented Generation: A Survey](https://github.com/fatty-belly/Awesome-AgenticRAG-Data/paper.pdf)".
+This repository is based on the paper "[Data-Centric Perspectives on Agentic Retrieval-Augmented Generation: A Survey](https://github.com/fatty-belly/Awesome-AgenticRAG-Data/blob/main/paper.pdf)".
 
 ## Table of Contents
 
@@ -18,8 +18,6 @@ This repository is based on the paper "[Data-Centric Perspectives on Agentic Ret
 ## Abstract
 
 Large Language Models (LLMs) excel at natural language understanding and generation, yet their reliance on static pre-training corpora may lead to outdated knowledge, hallucinations, and limited adaptability. Retrieval-Augmented Generation (RAG) mitigates these issues by grounding model outputs with external retrieval, but conventional RAG remains constrained by a fixed retrieve–then–generate routine and struggles with multi-step reasoning and tool calls. **Agentic RAG** addresses these limitations by enabling LLM agents to actively decompose tasks, issue exploratory queries, and refine evidence through iterative retrieval. Despite growing interest, the development of Agentic RAG is impeded by data scarcity: unlike traditional RAG, it requires challenging tasks that require planning, retrieval, and multiple reasoning decisions, and corresponding rich, interactive agent trajectories. This survey presents the first data-centric overview of Agentic RAG, framing its data lifecycle—data collecting, data preprocessing and task formulation, task construction, data for evaluation, and data enhancement for training—and cataloging representative systems and datasets in different domains (\eg question answering, web, software engineering). From data perspectives, we aim to guide the creation of scalable, high-quality datasets for the next generation of adaptive, knowledge-seeking LLM agents.
-
----
 
 ## Introduction
 
@@ -366,9 +364,7 @@ For this part, please refer to [task formulation](#task-formulation) for the pap
   </tbody>
 </table>
 
----
-
-*Metrics for QA are generally string matching (exact/fuzzy) or F1, and are omitted in the table.*
+<p align="center"><em>Table 2. Details of domain-Specific Agentic RAG benchmarks. The metrics of QA are generally string matching (exact or fuzzy) or F1 score, and are omitted in the table.</em></p>
 
 ## Related Surveys
 
