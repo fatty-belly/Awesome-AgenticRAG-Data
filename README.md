@@ -12,8 +12,8 @@ This repository is based on the paper "[Data-Centric Perspectives on Agentic Ret
 1. [Abstract](#abstract)
 2. [Introduction](#introduction)
 3. [Data Lifecycle](#data-lifecycle)
-4. [Domain-Specific Agentic RAG Benchmarks](domain-specific-agentic-rag-benchmarks)
-5. [Related Surveys](related-surveys)
+4. [Domain-Specific Agentic RAG Benchmarks](#domain-specific-agentic-rag-benchmarks)
+5. [Related Surveys](#related-surveys)
 
 ## Abstract
 
@@ -89,7 +89,10 @@ This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that 
 5. [Data Enhancement for Training](#data-enhancement-for-training)
    - [SFT](#sft)
      - [Basic Tool-usage Skills](#basic-tool-usage-skills)
-     - [Thought–action Trajectories](#thought–action-trajectories)
+     - [Thought–action Trajectories](#thoughtaction-trajectories)
+   - [RL](#rl)
+     - [Outcome-based Rewards](#outcome-based-rewards)
+     - [Data-aware Rewards](#data-aware-rewards)
 
 ### Data Collecting
 
