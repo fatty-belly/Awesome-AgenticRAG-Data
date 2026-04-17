@@ -1,7 +1,7 @@
 # Awesome-AgenticRAG-Data
 
 [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
-[![TechRxiv](https://img.shields.io/badge/TechRxiv-AgenticRAG_Data-white.svg)](https://www.techrxiv.org/1356832)
+[![TechRxiv](https://img.shields.io/badge/TechRxiv-AgenticRAG_Data-white.svg)](https://doi.org/10.36227/techrxiv.176316052.24300253/v1)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)]()
 [![Contribution Welcome](https://img.shields.io/badge/Contributions-welcome-blue)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
