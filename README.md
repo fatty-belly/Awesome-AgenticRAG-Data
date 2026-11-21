@@ -320,6 +320,7 @@ This survey frames Agentic RAG through a [data lifecycle](#data-lifecycle) that 
 
 - (COLM 2025) **DeepRetrieval: Hacking Real Search Engines and Retrievers with Large Language Models via Reinforcement Learning** [[Paper]](https://arxiv.org/abs/2503.00223) [[Code]](https://github.com/pat-jj/DeepRetrieval) ![GitHub Repo stars](https://img.shields.io/github/stars/pat-jj/DeepRetrieval?style=social) (retrieval rewards)
 - **ReZero: Enhancing LLM search ability by trying one-more-time** [[Paper]](https://arxiv.org/pdf/2504.11001) [[Code]](https://github.com/menloresearch/ReZero) ![GitHub Repo stars](https://img.shields.io/github/stars/menloresearch/ReZero?style=social) (retrieval rewards)
+- (arXiv 2026) **MultiAgent-OPD: End-to-End Training of Hierarchical Multi-Agent Systems with On-Policy Distillation** [[Paper]](https://arxiv.org/abs/2610.23234)
 - (Neurips 2025) **WebThinker: Empowering Large Reasoning Models with Deep Research Capability** [[Paper]](https://arxiv.org/pdf/2504.21776) [[Code]](https://github.com/sunnynexus/WebThinker) ![GitHub Repo stars](https://img.shields.io/github/stars/sunnynexus/WebThinker?style=social) (preference pairs based on quality, efficiency, and conciseness)
 
 ## Domain-Specific Agentic RAG Benchmarks
